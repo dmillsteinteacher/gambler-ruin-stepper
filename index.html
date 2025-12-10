@@ -100,7 +100,7 @@
             <input type="number" id="p" value="0.5" min="0" max="1" step="0.01"><br><br>
 
             <label for="k">Number of Steps (k):</label>
-            <input type="number" id="k" value="10" min="1"><br><br>
+            <input type="number" id="k" value="1" min="1"><br><br>
 
             <button id="runButton">Run Simulation</button>
         </div>
@@ -108,15 +108,18 @@
         <div class="output-panel">
             <h2 id="result-title" style="display:none;">Simulation Results (k Steps)</h2>
 
-            <h3>Final State Vector ($\mathbf{\pi}_k$)</h3>
+            <h3>Initial State Vector (&pi;<sub>0</sub>)</h3>
+            <table id="initial-vector-output"></table>
+
+            <h3>Final State Vector (&pi;<sub>k</sub>)</h3>
             <table id="final-vector-output"></table>
             <p><strong>P(Ruin, \$0):</strong> <span id="p_ruin"></span></p>
             <p><strong>P(Goal, \$N):</strong> <span id="p_goal"></span></p>
             
-            <h3>1-Step Transition Matrix ($\mathbf{P}$)</h3>
+            <h3>1-Step Transition Matrix (P)</h3>
             <table id="p-matrix-output"></table>
 
-            <h3>k-Step Transition Matrix ($\mathbf{P}^k$)</h3>
+            <h3>k-Step Transition Matrix (P<sup>k</sup>)</h3>
             <table id="pk-matrix-output"></table>
         </div>
     </div>
@@ -129,9 +132,7 @@
             const tableElement = document.getElementById(elementId);
             tableElement.innerHTML = '';
             
-            // Convert math.js matrix to a nested array for easier rendering
             const data = matrix.toArray();
-
             let tableHTML = '<tr>';
             const N = data[0].length - 1;
 
@@ -163,22 +164,15 @@
 
         /**
          * F1: Generates the (N+1) x (N+1) Transition Matrix P.
-         * FIX: Explicitly converts to math.matrix()
          */
         function generateTransitionMatrix(N, p) {
-            // Initialize as a math.js matrix object
             const matrix = math.matrix(math.zeros([N + 1, N + 1])); 
-            const q = 1 - p; // Probability of losing
+            const q = 1 - p;
 
             for (let i = 0; i <= N; i++) {
-                // Absorbing States (Rows 0 and N)
-                if (i === 0) {
-                    matrix.set([i, i], 1);
-                } else if (i === N) {
-                    matrix.set([i, i], 1);
-                }
-                // Intermediate States (Rows 1 to N-1)
-                else {
+                if (i === 0 || i === N) {
+                    matrix.set([i, i], 1); // Absorbing States
+                } else {
                     matrix.set([i, i + 1], p); // Move up (Win)
                     matrix.set([i, i - 1], q); // Move down (Lose)
                 }
@@ -188,10 +182,8 @@
 
         /**
          * F2: Generates the 1 x (N+1) Initial State Vector Pi_0.
-         * FIX: Explicitly converts to math.matrix()
          */
         function generateInitialVector(N, n) {
-            // Initialize as a math.js matrix object
             const vector = math.matrix(math.zeros([1, N + 1])); 
             if (n >= 0 && n <= N) {
                 vector.set([0, n], 1);
@@ -200,13 +192,12 @@
         }
 
         /**
-         * Custom matrix power function (to ensure compatibility)
+         * Custom matrix power function
          */
         function matrixPower(M, k) {
             if (k === 1) return M;
             if (k === 0) return math.identity(M.size()[0], M.size()[1]);
             
-            // Use math.pow, which is the standard math.js method for matrix exponentiation.
             return math.pow(M, k);
         }
 
@@ -228,16 +219,9 @@
 
             // 2. Core Calculation
             try {
-                // Generate the 1-Step Transition Matrix P
                 const P = generateTransitionMatrix(N, p);
-
-                // Calculate the k-Step Transition Matrix P^k
                 const P_k = matrixPower(P, k);
-
-                // Generate the Initial State Vector Pi_0
                 const Pi_0 = generateInitialVector(N, n);
-
-                // Calculate the Final State Vector Pi_k = Pi_0 * P^k
                 const Pi_k = math.multiply(Pi_0, P_k);
 
                 // 3. Display Results
@@ -249,6 +233,9 @@
                 // Display P^k
                 displayMatrix(P_k, 'pk-matrix-output');
                 
+                // Display Pi_0 (Initial Vector)
+                displayMatrix(Pi_0, 'initial-vector-output', true);
+
                 // Display Pi_k (Final Vector)
                 displayMatrix(Pi_k, 'final-vector-output', true);
 
@@ -264,12 +251,13 @@
             }
         }
 
-        // IMPORTANT: Wait for the page and math.js library to load before adding event listeners.
         document.addEventListener('DOMContentLoaded', () => {
             const runButton = document.getElementById('runButton');
             if (runButton) {
                 runButton.addEventListener('click', runSimulation);
             }
+            // Run on load with default settings (k=1)
+            runSimulation();
         });
     </script>
 </body>
