@@ -163,9 +163,11 @@
 
         /**
          * F1: Generates the (N+1) x (N+1) Transition Matrix P.
+         * FIX: Explicitly converts to math.matrix()
          */
         function generateTransitionMatrix(N, p) {
-            const matrix = math.zeros([N + 1, N + 1]);
+            // Initialize as a math.js matrix object
+            const matrix = math.matrix(math.zeros([N + 1, N + 1])); 
             const q = 1 - p; // Probability of losing
 
             for (let i = 0; i <= N; i++) {
@@ -186,9 +188,11 @@
 
         /**
          * F2: Generates the 1 x (N+1) Initial State Vector Pi_0.
+         * FIX: Explicitly converts to math.matrix()
          */
         function generateInitialVector(N, n) {
-            const vector = math.zeros([1, N + 1]);
+            // Initialize as a math.js matrix object
+            const vector = math.matrix(math.zeros([1, N + 1])); 
             if (n >= 0 && n <= N) {
                 vector.set([0, n], 1);
             }
@@ -197,13 +201,12 @@
 
         /**
          * Custom matrix power function (to ensure compatibility)
-         * We need to handle k=0 and k=1 cases carefully.
          */
         function matrixPower(M, k) {
             if (k === 1) return M;
             if (k === 0) return math.identity(M.size()[0], M.size()[1]);
             
-            // This ensures we are calling the math.js matrix exponentiation on a math.js Matrix type.
+            // Use math.pow, which is the standard math.js method for matrix exponentiation.
             return math.pow(M, k);
         }
 
@@ -256,7 +259,7 @@
                 document.getElementById('p_goal').textContent = math.format(goalProb, {notation: 'fixed', precision: 4});
 
             } catch (error) {
-                console.error("Calculation Error (likely math.js matrix operation issue):", error);
+                console.error("Calculation Error (math.js issue):", error);
                 alert("An error occurred during calculation. Check the console for details.");
             }
         }
