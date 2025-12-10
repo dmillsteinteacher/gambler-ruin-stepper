@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gambler's Ruin Simulator (Markov Chain)</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .input-panel {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex: 0 0 300px; /* Fixed width for input panel */
+        }
+
+        .output-panel {
+            flex-grow: 1;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            width: 100px;
+            padding: 5px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+            font-size: small;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.0/math.min.js"></script>
+</head>
+<body>
+
+    <h1>Gambler's Ruin Simulator</h1>
+    <p>A Discrete-Time Markov Chain visualization tool for the Applied Statistics class.</p>
+    
+    <div class="container">
+        <div class="input-panel">
+            <h2>Scenario Setup</h2>
+            <label for="N">Goal State (N):</label>
+            <input type="number" id="N" value="5" min="1"><br><br>
+
+            <label for="n">Start State (n):</label>
+            <input type="number" id="n" value="3" min="0"><br><br>
+
+            <label for="p">Win Probability (p):</label>
+            <input type="number" id="p" value="0.5" min="0" max="1" step="0.01"><br><br>
+
+            <label for="k">Number of Steps (k):</label>
+            <input type="number" id="k" value="10" min="1"><br><br>
+
+            <button onclick="runSimulation()">Run Simulation</button>
+        </div>
+
+        <div class="output-panel">
+            <h2 id="result-title" style="display:none;">Simulation Results (k Steps)</h2>
+
+            <h3>Final State Vector ($\mathbf{\pi}_k$)</h3>
+            <table id="final-vector-output"></table>
+            <p><strong>P(Ruin, \$0):</strong> <span id="p_ruin"></span></p>
+            <p><strong>P(Goal, \$N):</strong> <span id="p_goal"></span></p>
+            
+            <h3>1-Step Transition Matrix ($\mathbf{P}$)</h3>
+            <table id="p-matrix-output"></table>
+
+            <h3>k-Step Transition Matrix ($\mathbf{P}^k$)</h3>
+            <table id="pk-matrix-output"></table>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Helper function to create an HTML table from a math.js matrix.
+         */
+        function displayMatrix(matrix, elementId, isVector = false) {
+            const tableElement = document.getElementById(elementId);
+            tableElement.innerHTML = '';
+            
+            // Convert math.js matrix to a nested array for easier rendering
+            const data = matrix.toArray();
+
+            let tableHTML = '<tr>';
+            const N = data[0].length - 1;
+
+            // Create column headers for states 0 to N
+            for (let i = 0; i <= N; i++) {
+                tableHTML += `<th>\$${i}</th>`;
+            }
+            tableHTML += '</tr>';
+
+            if (isVector) {
+                // Handle the vector output (a single row)
+                tableHTML += '<tr>';
+                data[0].forEach(val => {
+                    tableHTML += `<td>${math.format(val, {notation: 'fixed', precision: 4})}</td>`;
+                });
+                tableHTML += '</tr>';
+            } else {
+                // Handle the matrix output
+                for (let i = 0; i < data.length; i++) {
+                    tableHTML += `<tr><th>\$${i}</th>`; // Row header (Current State)
+                    data[i].forEach(val => {
+                        tableHTML += `<td>${math.format(val, {notation: 'fixed', precision: 4})}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                }
+            }
+            tableElement.innerHTML = tableHTML;
+        }
+
+        /**
+         * F1: Generates the (N+1) x (N+1) Transition Matrix P.
+         */
+        function generateTransitionMatrix(N, p) {
+            const matrix = math.zeros([N + 1, N + 1]);
+            const q = 1 - p; // Probability of losing
+
+            for (let i = 0; i <= N; i++) {
+                // Absorbing States (Rows 0 and N)
+                if (i === 0) {
+                    matrix.set([i, i], 1);
+                } else if (i === N) {
+                    matrix.set([i, i], 1);
+                }
+                // Intermediate States (Rows 1 to N-1)
+                else {
+                    matrix.set([i, i + 1], p); // Move up (Win)
+                    matrix.set([i, i - 1], q); // Move down (Lose)
+                }
+            }
+            return matrix;
+        }
+
+        /**
+         * F2: Generates the 1 x (N+1) Initial State Vector Pi_0.
+         */
+        function generateInitialVector(N, n) {
+            const vector = math.zeros([1, N + 1]);
+            if (n >= 0 && n <= N) {
+                vector.set([0, n], 1);
+            }
+            return vector;
+        }
+
+        /**
+         * F3: Calculates and displays all results.
+         */
+        function runSimulation() {
+            // 1. Get Inputs
+            const N = parseInt(document.getElementById('N').value);
+            const n = parseInt(document.getElementById('n').value);
+            const p = parseFloat(document.getElementById('p').value);
+            const k = parseInt(document.getElementById('k').value);
+
+            // Basic Input Validation
+            if (isNaN(N) || isNaN(n) || isNaN(p) || isNaN(k) || N < 1 || n < 0 || n > N || p < 0 || p > 1 || k < 1) {
+                alert("Please enter valid parameters. Ensure 0 <= n <= N and 0 <= p <= 1.");
+                return;
+            }
+
+            // 2. Core Calculation
+            try {
+                // Generate the 1-Step Transition Matrix P
+                const P = generateTransitionMatrix(N, p);
+
+                // Calculate the k-Step Transition Matrix P^k
+                const P_k = math.pow(P, k);
+
+                // Generate the Initial State Vector Pi_0
+                const Pi_0 = generateInitialVector(N, n);
+
+                // Calculate the Final State Vector Pi_k = Pi_0 * P^k
+                const Pi_k = math.multiply(Pi_0, P_k);
+
+                // 3. Display Results
+                document.getElementById('result-title').style.display = 'block';
+
+                // Display P
+                displayMatrix(P, 'p-matrix-output');
+                
+                // Display P^k
+                displayMatrix(P_k, 'pk-matrix-output');
+                
+                // Display Pi_k (Final Vector)
+                displayMatrix(Pi_k, 'final-vector-output', true);
+
+                // Display Summary
+                const ruinProb = Pi_k.get([0, 0]);
+                const goalProb = Pi_k.get([0, N]);
+                document.getElementById('p_ruin').textContent = math.format(ruinProb, {notation: 'fixed', precision: 4});
+                document.getElementById('p_goal').textContent = math.format(goalProb, {notation: 'fixed', precision: 4});
+
+            } catch (error) {
+                console.error("Calculation Error:", error);
+                alert("An error occurred during calculation. Check the console for details.");
+            }
+        }
+    </script>
+</body>
+</html>
