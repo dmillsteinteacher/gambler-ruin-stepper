@@ -24,7 +24,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            flex: 0 0 300px; /* Fixed width for input panel */
+            flex: 0 0 300px; 
         }
 
         .output-panel {
@@ -196,6 +196,18 @@
         }
 
         /**
+         * Custom matrix power function (to ensure compatibility)
+         * We need to handle k=0 and k=1 cases carefully.
+         */
+        function matrixPower(M, k) {
+            if (k === 1) return M;
+            if (k === 0) return math.identity(M.size()[0], M.size()[1]);
+            
+            // This ensures we are calling the math.js matrix exponentiation on a math.js Matrix type.
+            return math.pow(M, k);
+        }
+
+        /**
          * F3: Calculates and displays all results.
          */
         function runSimulation() {
@@ -207,7 +219,7 @@
 
             // Basic Input Validation
             if (isNaN(N) || isNaN(n) || isNaN(p) || isNaN(k) || N < 1 || n < 0 || n > N || p < 0 || p > 1 || k < 1) {
-                alert("Please enter valid parameters. Ensure 0 <= n <= N and 0 <= p <= 1.");
+                alert("Please enter valid parameters. Ensure 0 <= n <= N and 0 <= p <= 1, and k >= 1.");
                 return;
             }
 
@@ -217,8 +229,7 @@
                 const P = generateTransitionMatrix(N, p);
 
                 // Calculate the k-Step Transition Matrix P^k
-                // Math.pow is necessary because math.js requires the power operator for matrices.
-                const P_k = math.pow(P, k);
+                const P_k = matrixPower(P, k);
 
                 // Generate the Initial State Vector Pi_0
                 const Pi_0 = generateInitialVector(N, n);
@@ -245,12 +256,12 @@
                 document.getElementById('p_goal').textContent = math.format(goalProb, {notation: 'fixed', precision: 4});
 
             } catch (error) {
-                console.error("Calculation Error (likely math.js issue or matrix dimensions):", error);
+                console.error("Calculation Error (likely math.js matrix operation issue):", error);
                 alert("An error occurred during calculation. Check the console for details.");
             }
         }
 
-        // IMPORTANT FIX: Wait for the page and math.js library to load before adding event listeners.
+        // IMPORTANT: Wait for the page and math.js library to load before adding event listeners.
         document.addEventListener('DOMContentLoaded', () => {
             const runButton = document.getElementById('runButton');
             if (runButton) {
