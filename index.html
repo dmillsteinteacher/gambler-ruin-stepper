@@ -102,7 +102,7 @@
             <label for="k">Number of Steps (k):</label>
             <input type="number" id="k" value="10" min="1"><br><br>
 
-            <button onclick="runSimulation()">Run Simulation</button>
+            <button id="runButton">Run Simulation</button>
         </div>
 
         <div class="output-panel">
@@ -217,6 +217,7 @@
                 const P = generateTransitionMatrix(N, p);
 
                 // Calculate the k-Step Transition Matrix P^k
+                // Math.pow is necessary because math.js requires the power operator for matrices.
                 const P_k = math.pow(P, k);
 
                 // Generate the Initial State Vector Pi_0
@@ -244,10 +245,18 @@
                 document.getElementById('p_goal').textContent = math.format(goalProb, {notation: 'fixed', precision: 4});
 
             } catch (error) {
-                console.error("Calculation Error:", error);
+                console.error("Calculation Error (likely math.js issue or matrix dimensions):", error);
                 alert("An error occurred during calculation. Check the console for details.");
             }
         }
+
+        // IMPORTANT FIX: Wait for the page and math.js library to load before adding event listeners.
+        document.addEventListener('DOMContentLoaded', () => {
+            const runButton = document.getElementById('runButton');
+            if (runButton) {
+                runButton.addEventListener('click', runSimulation);
+            }
+        });
     </script>
 </body>
 </html>
