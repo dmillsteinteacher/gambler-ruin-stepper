@@ -3,196 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gambler's Ruin Simulator (Markov Chain)</title>
-    
+    <title>Gambler's Ruin Markov Chain (Simple)</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f9;
-        }
-
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin-top: 20px;
-        }
-
-        .input-panel {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            flex: 0 0 300px; 
-        }
-
-        .output-panel {
-            flex-grow: 1;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input[type="number"] {
-            width: 100px;
-            padding: 5px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        button {
-            padding: 10px 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 15px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 20px;
-            font-size: small;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 6px 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
+        /* Basic CSS for simplicity and readability */
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f7f9; }
+        .container { max-width: 1000px; margin: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        h1 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .controls, .results { padding: 15px; border: 1px solid #ddd; border-radius: 6px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .input-group input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; margin-top: 5px; width: 100%; }
+        #resetBtn { background-color: #6c757d; }
+        #stepBtn { background-color: #007bff; }
+        #playBtn { background-color: #28a745; }
+        .vector-table th, .vector-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        .vector-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .chart-container { height: 200px; display: flex; align-items: flex-end; justify-content: space-around; background-color: #f8f8f8; padding: 10px; border-radius: 4px; }
+        .bar-wrapper { flex: 1; margin: 0 2px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+        .bar { width: 80%; background-color: #007bff; transition: height 0.3s ease; border-radius: 3px 3px 0 0; }
+        .bar-label { font-size: 10px; margin-top: 5px; }
+        .bar-value { font-size: 10px; margin-bottom: 3px; font-weight: bold; }
+        .ruin { background-color: #dc3545 !important; }
+        .goal { background-color: #28a745 !important; }
     </style>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.0/math.min.js"></script>
 </head>
 <body>
-
-    <h1>Gambler's Ruin Simulator</h1>
-    <p>A Discrete-Time Markov Chain visualization tool for the Applied Statistics class.</p>
-    
     <div class="container">
-        <div class="input-panel">
-            <h2>Scenario Setup</h2>
-            <label for="N">Goal State (N):</label>
-            <input type="number" id="N" value="5" min="1"><br><br>
+        <h1>Gambler's Ruin Markov Chain Simulator</h1>
+        <p>This is a simple Discrete-Time Markov Chain visualization running on pure HTML/JavaScript.</p>
+        
+        <div class="grid">
+            <div class="controls">
+                <h2>Scenario Setup</h2>
+                <div class="input-group">
+                    <label for="N_goal">Goal State (N):</label>
+                    <input type="number" id="N_goal" value="5" min="1" onchange="resetSimulation()">
+                </div>
+                <div class="input-group">
+                    <label for="n_start">Start State (n):</label>
+                    <input type="number" id="n_start" value="3" min="0" onchange="resetSimulation()">
+                </div>
+                <div class="input-group">
+                    <label for="p_win">Win Probability (p):</label>
+                    <input type="number" id="p_win" value="0.5" min="0" max="1" step="0.01" onchange="resetSimulation()">
+                </div>
 
-            <label for="n">Start State (n):</label>
-            <input type="number" id="n" value="3" min="0"><br><br>
+                <h3 style="margin-top: 20px;">Simulation Controls</h3>
+                <div style="background-color: #e9ecef; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 10px;">
+                    <div style="font-size: 14px; color: #555;">Current Step:</div>
+                    <div id="currentStepDisplay" style="font-size: 24px; font-weight: bold; color: #007bff;">0</div>
+                </div>
 
-            <label for="p">Win Probability (p):</label>
-            <input type="number" id="p" value="0.5" min="0" max="1" step="0.01"><br><br>
+                <button id="resetBtn" onclick="resetSimulation()">Reset to Step 0</button>
+                <button id="stepBtn" onclick="advanceSteps(1)">Next Step (+1)</button>
+                
+                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                    <input type="number" id="playSteps" value="10" min="1" style="flex: 1;">
+                    <button id="playBtn" onclick="advanceSteps(parseInt(document.getElementById('playSteps').value))" style="flex: 2;">
+                        Play N Steps
+                    </button>
+                </div>
+            </div>
 
-            <label for="k">Number of Steps (k):</label>
-            <input type="number" id="k" value="1" min="1"><br><br>
+            <div class="results">
+                <h2>Probability Distribution</h2>
 
-            <button id="runButton">Run Simulation</button>
-        </div>
+                <div class="chart-container" id="chartContainer">
+                    </div>
 
-        <div class="output-panel">
-            <h2 id="result-title" style="display:none;">Simulation Results (k Steps)</h2>
+                <h3 style="margin-top: 20px;">Current State Vector ($\pi_k$)</h3>
+                <div id="vectorTableContainer">
+                    </div>
 
-            <h3>Initial State Vector (&pi;<sub>0</sub>)</h3>
-            <table id="initial-vector-output"></table>
-
-            <h3>Final State Vector (&pi;<sub>k</sub>)</h3>
-            <table id="final-vector-output"></table>
-            <p><strong>P(Ruin, \$0):</strong> <span id="p_ruin"></span></p>
-            <p><strong>P(Goal, \$N):</strong> <span id="p_goal"></span></p>
-            
-            <h3>1-Step Transition Matrix (P)</h3>
-            <table id="p-matrix-output"></table>
-
-            <h3>k-Step Transition Matrix (P<sup>k</sup>)</h3>
-            <table id="pk-matrix-output"></table>
+                <h3 style="margin-top: 20px;">1-Step Transition Matrix ($\mathbf{P}$)</h3>
+                <div id="transitionMatrixContainer" style="overflow-x: auto;">
+                    </div>
+            </div>
         </div>
     </div>
-
-    <script>
-        /**
-         * Helper function to create an HTML table from a math.js matrix.
-         */
-        function displayMatrix(matrix, elementId, isVector = false) {
-            const tableElement = document.getElementById(elementId);
-            tableElement.innerHTML = '';
-            
-            const data = matrix.toArray();
-            let tableHTML = '<tr>';
-            const N = data[0].length - 1;
-
-            // Create column headers for states 0 to N
-            for (let i = 0; i <= N; i++) {
-                tableHTML += `<th>\$${i}</th>`;
-            }
-            tableHTML += '</tr>';
-
-            if (isVector) {
-                // Handle the vector output (a single row)
-                tableHTML += '<tr>';
-                data[0].forEach(val => {
-                    tableHTML += `<td>${math.format(val, {notation: 'fixed', precision: 4})}</td>`;
-                });
-                tableHTML += '</tr>';
-            } else {
-                // Handle the matrix output
-                for (let i = 0; i < data.length; i++) {
-                    tableHTML += `<tr><th>\$${i}</th>`; // Row header (Current State)
-                    data[i].forEach(val => {
-                        tableHTML += `<td>${math.format(val, {notation: 'fixed', precision: 4})}</td>`;
-                    });
-                    tableHTML += '</tr>';
-                }
-            }
-            tableElement.innerHTML = tableHTML;
-        }
-
-        /**
-         * F1: Generates the (N+1) x (N+1) Transition Matrix P.
-         */
-        function generateTransitionMatrix(N, p) {
-            const matrix = math.matrix(math.zeros([N + 1, N + 1])); 
-            const q = 1 - p;
-
-            for (let i = 0; i <= N; i++) {
-                if (i === 0 || i === N) {
-                    matrix.set([i, i], 1); // Absorbing States
-                } else {
-                    matrix.set([i, i + 1], p); // Move up (Win)
-                    matrix.set([i, i - 1], q); // Move down (Lose)
-                }
-            }
-            return matrix;
-        }
-
-        /**
-         * F2: Generates the 1 x (N+1) Initial State Vector Pi_0.
-         */
-        function generateInitialVector(N, n) {
-            const vector = math.matrix(math.zeros([1, N + 1])); 
-            if (n >= 0 && n <= N) {
-                vector.set([0, n], 1);
-            }
-            return vector;
-        }
-
-        /**
-         * Custom matrix power function
-         */
-        function matrixPower(M, k) {
-            if
+    <script src="script.js"></script>
+</body>
+</html>
