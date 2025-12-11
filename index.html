@@ -27,11 +27,20 @@
         .vector-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
         .chart-container { height: 200px; display: flex; align-items: flex-end; justify-content: space-around; background-color: #f8f8f8; padding: 10px; border-radius: 4px; }
         .bar-wrapper { flex: 1; margin: 0 2px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
-        .bar { width: 80%; background-color: #007bff; transition: height 0.3s ease; border-radius: 3px 3px 0 0; }
+        
+        /* --- VISUAL FIX: Added !important to force background color display --- */
+        .bar { 
+            width: 80%; 
+            background-color: #007bff !important; /* Base Blue */
+            transition: height 0.3s ease; 
+            border-radius: 3px 3px 0 0; 
+        }
         .bar-label { font-size: 10px; margin-top: 5px; }
         .bar-value { font-size: 10px; margin-bottom: 3px; font-weight: bold; }
-        .ruin { background-color: #dc3545 !important; }
-        .goal { background-color: #28a745 !important; }
+        
+        /* Overrides */
+        .ruin { background-color: #dc3545 !important; } /* Red */
+        .goal { background-color: #28a745 !important; } /* Green */
     </style>
 </head>
 <body>
