@@ -10,7 +10,6 @@ const matrixMultiply = (A, B) => {
 
     // Check for compatible dimensions
     if (colsA !== B.length) {
-        // This should not happen in this application if dimensions are N+1 x N+1
         throw new Error("Matrix dimensions are incompatible for multiplication.");
     }
 
@@ -263,13 +262,14 @@ const renderTransitionMatrix = () => {
 const updateAllDisplays = () => {
     document.getElementById('currentStepDisplay').textContent = currentStep;
     
-    // MathJax needs a moment to process the document, so we can run rendering functions first.
+    // 1. Render content first
     renderChart();
     renderVectorTable();
     renderTransitionMatrix();
 
-    // Trigger MathJax re-render for the dynamically inserted content (optional but safer)
+    // 2. Trigger MathJax re-render for the dynamically inserted content
     if (window.MathJax) {
+        // This command scans the page for new LaTeX and renders it.
         MathJax.typesetPromise();
     }
 };
