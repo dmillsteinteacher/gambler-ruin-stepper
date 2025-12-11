@@ -10,37 +10,52 @@
     </script> 
     
     <style>
-        /* Basic CSS for simplicity and readability */
+        /* General Layout */
         body { font-family: sans-serif; margin: 20px; background-color: #f4f7f9; }
         .container { max-width: 1000px; margin: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
         h1 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
         h2, h3 { color: #555; }
         .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
         .controls, .results { padding: 15px; border: 1px solid #ddd; border-radius: 6px; }
+        
+        /* Input/Button Styles */
         .input-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         .input-group input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; margin-top: 5px; width: 100%; }
         #resetBtn { background-color: #6c757d; }
         #stepBtn { background-color: #007bff; }
         #playBtn { background-color: #28a745; }
+        
+        /* Table Styles */
         .vector-table th, .vector-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
         .vector-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        .chart-container { height: 200px; display: flex; align-items: flex-end; justify-content: space-around; background-color: #f8f8f8; padding: 10px; border-radius: 4px; }
-        .bar-wrapper { flex: 1; margin: 0 2px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
         
-        /* --- VISUAL FIX: Added !important to force background color display --- */
+        /* Chart Styles */
+        .chart-container { 
+            height: 200px; 
+            display: flex; 
+            align-items: flex-end; /* Bars start at the bottom */
+            justify-content: space-around; 
+            background-color: #f8f8f8; 
+            padding: 10px; 
+            border-radius: 4px; 
+        }
+        .bar-wrapper { 
+            flex: 1; 
+            margin: 0 2px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: flex-end; 
+            align-items: center; 
+        }
         .bar { 
             width: 80%; 
-            background-color: #007bff !important; /* Base Blue */
             transition: height 0.3s ease; 
             border-radius: 3px 3px 0 0; 
+            /* COLOR IS NOW SET IN SCRIPT.JS */
         }
         .bar-label { font-size: 10px; margin-top: 5px; }
         .bar-value { font-size: 10px; margin-bottom: 3px; font-weight: bold; }
-        
-        /* Overrides */
-        .ruin { background-color: #dc3545 !important; } /* Red */
-        .goal { background-color: #28a745 !important; } /* Green */
     </style>
 </head>
 <body>

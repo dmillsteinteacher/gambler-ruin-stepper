@@ -179,6 +179,7 @@ const renderVectorTable = () => {
 
     // Data (Probabilities)
     currentVector.forEach((prob, i) => {
+        // Classes are still useful for general styling if needed
         const className = i === 0 ? 'ruin' : i === N_global ? 'goal' : '';
         html += `<td class="${className}">${formatNum(prob)}</td>`;
     });
@@ -188,44 +189,50 @@ const renderVectorTable = () => {
 };
 
 /**
- * Renders the bar chart visualization (VERIFIED FIX).
+ * Renders the bar chart visualization (Final Fix: Inline Styling for Color).
  */
 const renderChart = () => {
     const container = document.getElementById('chartContainer');
-    container.innerHTML = ''; // IMPORTANT: Clears the previous chart
+    container.innerHTML = ''; // Clears the previous chart
     
     currentVector.forEach((prob, state) => {
         const height = prob * 100; // Height as percentage
-        let barClass = 'bar';
-        if (state === 0) barClass += ' ruin';
-        if (state === N_global) barClass += ' goal';
+        let color = '#007bff'; // Default/Transient color (Blue)
 
-        // 1. Create the Bar Wrapper (Flex container for bar, label, and value)
+        if (state === 0) {
+            color = '#dc3545'; // Ruin color (Red)
+        }
+        if (state === N_global) {
+            color = '#28a745'; // Goal color (Green)
+        }
+
+        // 1. Create the Bar Wrapper
         const wrapper = document.createElement('div');
         wrapper.className = 'bar-wrapper';
         wrapper.title = `State $${state}: ${formatNum(prob)}`;
 
-        // 2. Create the Probability Value Label (at the top of the bar)
+        // 2. Create the Probability Value Label
         const value = document.createElement('div');
         value.className = 'bar-value';
         value.textContent = `${(prob * 100).toFixed(1)}%`;
 
         // 3. Create the Actual Bar Element
         const bar = document.createElement('div');
-        bar.className = barClass;
-        bar.style.height = `${height}%`; // Sets the height
+        bar.className = 'bar'; // Only the base class needed for width/transition
+        
+        // Inline styles for guaranteed visibility
+        bar.style.height = `${height}%`; 
+        bar.style.backgroundColor = color; // <-- GUARANTEED COLOR
 
-        // 4. Create the State Label (at the bottom)
+        // 4. Create the State Label
         const label = document.createElement('div');
         label.className = 'bar-label';
         label.textContent = `$${state}`;
 
-        // 5. Assemble the wrapper (top-down order)
+        // 5. Assemble and Append
         wrapper.appendChild(value);
         wrapper.appendChild(bar);
         wrapper.appendChild(label);
-
-        // 6. Append the assembled bar to the main container
         container.appendChild(wrapper);
     });
 };
@@ -269,7 +276,6 @@ const updateAllDisplays = () => {
 
     // 2. Trigger MathJax re-render for the dynamically inserted content
     if (window.MathJax) {
-        // This command scans the page for new LaTeX and renders it.
         MathJax.typesetPromise();
     }
 };
