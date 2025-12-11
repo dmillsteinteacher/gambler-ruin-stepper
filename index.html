@@ -4,11 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gambler's Ruin Markov Chain (Simple)</title>
+    
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script> 
+    
     <style>
         /* Basic CSS for simplicity and readability */
         body { font-family: sans-serif; margin: 20px; background-color: #f4f7f9; }
         .container { max-width: 1000px; margin: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
         h1 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        h2, h3 { color: #555; }
         .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
         .controls, .results { padding: 15px; border: 1px solid #ddd; border-radius: 6px; }
         .input-group label { display: block; margin-bottom: 5px; font-weight: bold; }
@@ -31,21 +37,21 @@
 <body>
     <div class="container">
         <h1>Gambler's Ruin Markov Chain Simulator</h1>
-        <p>This is a simple Discrete-Time Markov Chain visualization running on pure HTML/JavaScript.</p>
+        <p>A simple Discrete-Time Markov Chain visualization running on pure HTML/JavaScript.</p>
         
         <div class="grid">
             <div class="controls">
                 <h2>Scenario Setup</h2>
                 <div class="input-group">
-                    <label for="N_goal">Goal State (N):</label>
+                    <label for="N_goal">Goal State ($N$):</label>
                     <input type="number" id="N_goal" value="5" min="1" onchange="resetSimulation()">
                 </div>
                 <div class="input-group">
-                    <label for="n_start">Start State (n):</label>
+                    <label for="n_start">Start State ($n$):</label>
                     <input type="number" id="n_start" value="3" min="0" onchange="resetSimulation()">
                 </div>
                 <div class="input-group">
-                    <label for="p_win">Win Probability (p):</label>
+                    <label for="p_win">Win Probability ($p$):</label>
                     <input type="number" id="p_win" value="0.5" min="0" max="1" step="0.01" onchange="resetSimulation()">
                 </div>
 

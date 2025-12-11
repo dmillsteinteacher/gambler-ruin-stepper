@@ -10,6 +10,7 @@ const matrixMultiply = (A, B) => {
 
     // Check for compatible dimensions
     if (colsA !== B.length) {
+        // This should not happen in this application if dimensions are N+1 x N+1
         throw new Error("Matrix dimensions are incompatible for multiplication.");
     }
 
@@ -188,11 +189,11 @@ const renderVectorTable = () => {
 };
 
 /**
- * Renders the bar chart visualization.
+ * Renders the bar chart visualization (VERIFIED FIX).
  */
 const renderChart = () => {
     const container = document.getElementById('chartContainer');
-    container.innerHTML = '';
+    container.innerHTML = ''; // IMPORTANT: Clears the previous chart
     
     currentVector.forEach((prob, state) => {
         const height = prob * 100; // Height as percentage
@@ -200,25 +201,32 @@ const renderChart = () => {
         if (state === 0) barClass += ' ruin';
         if (state === N_global) barClass += ' goal';
 
+        // 1. Create the Bar Wrapper (Flex container for bar, label, and value)
         const wrapper = document.createElement('div');
         wrapper.className = 'bar-wrapper';
         wrapper.title = `State $${state}: ${formatNum(prob)}`;
 
+        // 2. Create the Probability Value Label (at the top of the bar)
         const value = document.createElement('div');
         value.className = 'bar-value';
         value.textContent = `${(prob * 100).toFixed(1)}%`;
 
+        // 3. Create the Actual Bar Element
         const bar = document.createElement('div');
         bar.className = barClass;
-        bar.style.height = `${height}%`;
+        bar.style.height = `${height}%`; // Sets the height
 
+        // 4. Create the State Label (at the bottom)
         const label = document.createElement('div');
         label.className = 'bar-label';
         label.textContent = `$${state}`;
 
+        // 5. Assemble the wrapper (top-down order)
         wrapper.appendChild(value);
         wrapper.appendChild(bar);
         wrapper.appendChild(label);
+
+        // 6. Append the assembled bar to the main container
         container.appendChild(wrapper);
     });
 };
@@ -255,9 +263,15 @@ const renderTransitionMatrix = () => {
 const updateAllDisplays = () => {
     document.getElementById('currentStepDisplay').textContent = currentStep;
     
+    // MathJax needs a moment to process the document, so we can run rendering functions first.
     renderChart();
     renderVectorTable();
     renderTransitionMatrix();
+
+    // Trigger MathJax re-render for the dynamically inserted content (optional but safer)
+    if (window.MathJax) {
+        MathJax.typesetPromise();
+    }
 };
 
 
